@@ -18,13 +18,19 @@ param:
 """
 def generacion (lam,pobact,edadMuertes):
     pob_siguiente = []
+    muertesHumanos = int(len(pobact)/10)
     for i in range (0,len(pobact)):
-        if pobact[i] < edadMuertes[i]:
+        a = random.randint(0,len(edadMuertes))
+        if pobact[i] < edadMuertes[a-1]:
             pob_siguiente.append(pobact[i]+1)
         elif pobact[i]>5: 
-            for j in range (0,lam[i]):
+            b = random.randint(0,len(lam)-1)
+            for j in range (0,int(lam[b])):
                 pob_siguiente.append(0)
-    return pob_siguiente
+    pob_final = [0]*(len(pob_siguiente)-muertesHumanos)
+    for i in range(0,len(pob_siguiente)-muertesHumanos):
+        pob_final[i] = pob_siguiente[i+muertesHumanos]
+    return pob_final
 
 """ Simula un proceso de ramificacion de n generaciones en el que cada una se modela con el método generacion.
 return = booleano de si muere la población en n generaciones o no
@@ -34,14 +40,15 @@ param:
     pobact = lista de la población de osos en esa generación
 
 """
-def ramificacion(lam,n,pobact):
+def ramificacion(lam,n,pobact, edadMuertes):
     pobramificacion = []
     pobmuere = False
     for i in range (0,n):
+        print (len(pobact))
         if len(pobact) == 0:
             pobmuere = True
             return pobmuere
-        pobramificacion = generacion(lam,pobact)
+        pobramificacion = generacion(lam,pobact,edadMuertes)
         pobact = pobramificacion
     return pobmuere
         
@@ -53,12 +60,13 @@ def ramificacion(lam,n,pobact):
     n = número de generaciones
     num_intentos =
 """
-def probExtincion (lam,n,num_intentos,pobAct):
+def probExtincion (lam,n,num_intentos,pobAct,edadMuertes):
     results = 0
-    for i in range (0, n):
-        pobMuere = ramificacion (lam,n,pobAct)
+    for i in range (0, num_intentos):
+        pobMuere = ramificacion (lam,n,pobAct,edadMuertes)
         if pobMuere:
             results +=1
+    print (results)
     return float (results)/num_intentos 
             
 """ Un método auxiliar para que el número de crías o de muertes por oso (lam) siempre sea positivo para que corresponda con la realidad.
@@ -98,15 +106,17 @@ def controlador(array):
     return array_new
 
 # lam genera un numero regido por la distribución Normal(2,0.5), la cual siguen los osos de anteojos
-n = 10
-intentos = 1000
-poblacionInicial = 500
+n = 30
+intentos = 1
+poblacionInicial = 11000
 numTemporal = 2000
 
 pob_muerte = controlador(positivisador(np.random.normal(22,9,numTemporal)))
-pob_act = positivisador(np.random.normal(12,6,numTemporal))
+pob_act = positivisador(np.random.normal(12,6,poblacionInicial))
 
-lam =  np.random.normal(2, 0.5, numTemporal)
+lam = positivisador(np.random.normal(2, 0.5, numTemporal))
+
+"""
 count, bins, ignored = plt.hist(pob_muerte, 20, normed=True)
 
 # Plot the distribution curve
@@ -118,10 +128,10 @@ count2, bins2, ignored2 = plt.hist(pob_act, 20, normed=True)
 plt.plot(bins2, 1/(7 * np.sqrt(2 * np.pi)) *
     np.exp( - (bins2 - 12)*2 / (2 * 7*2) ),       linewidth=3, color='y')
 plt.show()
+"""
 
 
-print (pob_muerte)
-print (probExtincion(lam,n,intentos,pob_act))
+print (probExtincion(lam,n,intentos,pob_act,pob_muerte))
     
 """Trabajo futuro:
     - Ajustar los años de vida de los osos.
