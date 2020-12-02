@@ -16,14 +16,19 @@ param:
     pobact = lista de la población de osos en esa generación
 
 """
-def generacion (lam,pobact,edadMuertes):
+def generacion (pobact,edadMuertes):
     pob_siguiente = []
-    muertesHumanos = int(len(pobact)/10)
+    muertesHumanos = int(len(pobact)/7)
+    media, desviacion = aproxLamba(pobact)
+    lam = lamba (media,desviacion ,len(pobact))
+    
     for i in range (0,len(pobact)):
         a = random.randint(0,len(edadMuertes))
         if pobact[i] < edadMuertes[a-1]:
             pob_siguiente.append(pobact[i]+1)
         elif pobact[i]>5: 
+            if len(lam) == 0:
+                continue
             b = random.randint(0,len(lam)-1)
             for j in range (0,int(lam[b])):
                 pob_siguiente.append(0)
@@ -40,16 +45,17 @@ param:
     pobact = lista de la población de osos en esa generación
 
 """
-def ramificacion(lam,n,pobact, edadMuertes):
+def ramificacion(n,pobact, edadMuertes):
     pobramificacion = []
+    pob_historica = [0] * n
     pobmuere = False
     for i in range (0,n):
-        print (len(pobact))
-        if len(pobact) == 0:
+        if len(pobact) <= 40:
             pobmuere = True
             return pobmuere
-        pobramificacion = generacion(lam,pobact,edadMuertes)
+        pobramificacion = generacion(pobact,edadMuertes)
         pobact = pobramificacion
+        pob_historica[i] = len(pobact)
     return pobmuere
         
     
@@ -60,14 +66,37 @@ def ramificacion(lam,n,pobact, edadMuertes):
     n = número de generaciones
     num_intentos =
 """
-def probExtincion (lam,n,num_intentos,pobAct,edadMuertes):
+def probExtincion (n,num_intentos,pobAct,edadMuertes):
     results = 0
     for i in range (0, num_intentos):
-        pobMuere = ramificacion (lam,n,pobAct,edadMuertes)
+        pobMuere =ramificacion (n,pobAct,edadMuertes)
         if pobMuere:
             results +=1
-    print (results)
+        
     return float (results)/num_intentos 
+
+def aproxLamba (pobact):
+   media = 2
+   desviacion = 0.5
+   pob = len(pobact)
+   if pob <10:
+       media =0
+       desviacion = 0
+   elif pob< 50:
+       media = 0.3
+       desviacion  = 0.1
+   elif pob< 100:
+       media = 0.8
+       desviacion  = 0.3
+   elif pob< 300:
+       media = 1.3
+       desviacion  = 0.4
+   elif pob < 500:
+       media = 1.6
+       desviacion  = 0.6
+   return media, desviacion 
+        
+    
             
 """ Un método auxiliar para que el número de crías o de muertes por oso (lam) siempre sea positivo para que corresponda con la realidad.
 return = lista de distribución normal de crías sin números negativos
@@ -105,34 +134,61 @@ def controlador(array):
             cont2 +=1           
     return array_new
 
-# lam genera un numero regido por la distribución Normal(2,0.5), la cual siguen los osos de anteojos
-n = 30
-intentos = 1
+
+
+""" Un método auxiliar que genera tres variables aleatorias.
+return:
+    pob_muerte = lista con número de la distribución Normal (22, 9 , numTemporal) que muestra las edades en las que mueren
+    pob_act = lista con número de la distribución Normal (12, 6 , poblacionInicial) que muestra las edades de los osos en cada generación
+    lam = lista con número de la distribución Normal (2, 0.5, numTemporal) que muestra las crías por oso.
+"""
+def variablesAleatorias ():
+    pob_muerte = controlador(positivisador(np.random.normal(22,9,numTemporal)))
+    pob_act = positivisador(np.random.normal(12,6,poblacionInicial))
+    return pob_muerte, pob_act
+
+def lamba (media, desviacion, intentos):
+    lam = positivisador(np.random.normal(media, desviacion, intentos))
+    return lam
+
+""" Un método auxiliar que grafica las diferentes distribuciones usadas.
+"""
+def graficas ():
+    count, bins, ignored = plt.hist(pob_muerte, 20, normed=True)
+    # Plot the distribution curve
+    plt.plot(bins, 1/(7 * np.sqrt(2 * np.pi)) *
+    np.exp( - (bins - 25)*2 / (2 * 7*2) ),       linewidth=3, color='y')
+    plt.show()
+    
+
+    count2, bins2, ignored2 = plt.hist(pob_act, 12, normed=True)
+    plt.plot(bins2, 1/(7 * np.sqrt(2 * np.pi)) *
+    np.exp( - (bins2 - 12)*2 / (2 * 7*2) ),       linewidth=2, color='y')
+    plt.title('Edad población actual')
+    plt.xlabel('Edad')
+    plt.ylabel('Número de osos')
+    plt.show()
+    
+    
+    count3, bins3, ignored3 = plt.hist(lam, 100, normed=False)
+    plt.plot(bins3, 1/(7* np.sqrt(3 * np.pi)) *
+    np.exp( - (bins2 - 12)*2 / (2 * 7*2) ),       linewidth=2, color='y')
+    plt.show()
+    
+    
+
+n = 40
+intentos = 300
 poblacionInicial = 11000
 numTemporal = 2000
-
-pob_muerte = controlador(positivisador(np.random.normal(22,9,numTemporal)))
-pob_act = positivisador(np.random.normal(12,6,poblacionInicial))
-
-lam = positivisador(np.random.normal(2, 0.5, numTemporal))
-
-"""
-count, bins, ignored = plt.hist(pob_muerte, 20, normed=True)
-
-# Plot the distribution curve
-plt.plot(bins, 1/(7 * np.sqrt(2 * np.pi)) *
-    np.exp( - (bins - 25)*2 / (2 * 7*2) ),       linewidth=3, color='y')
-plt.show()
-
-count2, bins2, ignored2 = plt.hist(pob_act, 20, normed=True)
-plt.plot(bins2, 1/(7 * np.sqrt(2 * np.pi)) *
-    np.exp( - (bins2 - 12)*2 / (2 * 7*2) ),       linewidth=3, color='y')
-plt.show()
-"""
+pob_muerte,pob_act = variablesAleatorias()
 
 
-print (probExtincion(lam,n,intentos,pob_act,pob_muerte))
-    
+print (probExtincion(n,intentos,pob_act,pob_muerte))
+
+
+
+
 """Trabajo futuro:
     - Ajustar los años de vida de los osos.
     - Ajustar la tasa de muerte de los osos.
