@@ -16,9 +16,10 @@ param:
     pobact = lista de la población de osos en esa generación
 
 """
-def generacion (pobact,edadMuertes):
+def generacion (pobact,edadMuertes,n):
     pob_siguiente = []
-    muertesHumanos = int(len(pobact)/6)
+    tMuertes = muertesHumanas(n)
+    muertesHumanos = int(len(pobact)*tMuertes)
     media, desviacion = aproxLamba(pobact)
     lam = lamba (media,desviacion ,len(pobact))
     
@@ -53,7 +54,7 @@ def ramificacion(n,pobact, edadMuertes):
         if len(pobact) <= 70:
             pobmuere = True
             return pobmuere
-        pobramificacion = generacion(pobact,edadMuertes)
+        pobramificacion = generacion(pobact,edadMuertes,n)
         pobact = pobramificacion
         pob_historica[i] = len(pobact)
     return pobmuere, pob_historica
@@ -82,25 +83,36 @@ param:
     pobact = 
 """
 def aproxLamba (pobact):
-   media = 2
+   media = 3
    desviacion = 0.5
    pob = len(pobact)
-   if pob <10:
-       media =0
-       desviacion = 0
-   elif pob< 50:
-       media = 0.3
-       desviacion  = 0.1
+   if pob< 50:
+       media = 1.5
+       desviacion  = 0.2
    elif pob< 100:
-       media = 0.8
+       media = 1.9
        desviacion  = 0.3
-   elif pob< 300:
-       media = 1.3
+   elif pob< 200:
+       media = 2.4
        desviacion  = 0.4
-   elif pob < 500:
-       media = 1.6
+   elif pob < 400:
+       media = 2.7
        desviacion  = 0.6
    return media, desviacion 
+
+def muertesHumanas (n):
+    muertes = 1/7
+    if n>5:
+        muertes = 1/16
+    elif n>10:
+        muertes = 1/25
+    elif n>15:
+        muertes =1/36
+    elif n>20:
+        muertes = 1/49
+    elif n>25:
+        muertes = 1/64
+    return muertes
             
 """ Un método auxiliar para que el número de crías o de muertes por oso (lam) siempre sea positivo para que corresponda con la realidad.
 return = lista de distribución normal de crías sin números negativos
@@ -173,28 +185,23 @@ def graficas ():
     plt.ylabel('Número de osos')
     plt.show()
     
-
+def years(n):
+    years =[0]*n
+    for i in range (0, n):
+        years[i] = 2020+i
+    return years
     
-
 n = 30
 intentos = 200
 poblacionInicial = 11000
 numTemporal = 2000
 pob_muerte,pob_act = variablesAleatorias()
 
-
 prob, pob_historica = probExtincion(n,intentos,pob_act,pob_muerte)
 print(prob)
+years = years(n)
+print (years)
+plt.plot(years, pob_historica)
 
-plt.plot(pob_historica)
-
-
-"""Trabajo futuro:
-    - Ajustar los años de vida de los osos.
-    - Ajustar la tasa de muerte de los osos.
-    - Separar la población de osos entre fertiles y no fertiles.
-    - Cambiar población inicial a la de los osos actualmente.
-    - Plottear
-    - Mejorar eficiencia
-    - Tener en cuenta la probabilidad de tener cada número de hijos.
- """
+plt.xlabel("Time (years)")
+plt.ylabel("Bear Population")
