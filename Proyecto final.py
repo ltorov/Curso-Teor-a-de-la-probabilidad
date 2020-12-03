@@ -18,7 +18,7 @@ param:
 """
 def generacion (pobact,edadMuertes):
     pob_siguiente = []
-    muertesHumanos = int(len(pobact)/7)
+    muertesHumanos = int(len(pobact)/6)
     media, desviacion = aproxLamba(pobact)
     lam = lamba (media,desviacion ,len(pobact))
     
@@ -50,13 +50,13 @@ def ramificacion(n,pobact, edadMuertes):
     pob_historica = [0] * n
     pobmuere = False
     for i in range (0,n):
-        if len(pobact) <= 40:
+        if len(pobact) <= 70:
             pobmuere = True
             return pobmuere
         pobramificacion = generacion(pobact,edadMuertes)
         pobact = pobramificacion
         pob_historica[i] = len(pobact)
-    return pobmuere
+    return pobmuere, pob_historica
         
     
 """Corre un número determinado (número de intentos) de procesos de ramificación con n, el numero de generaciones
@@ -69,12 +69,18 @@ def ramificacion(n,pobact, edadMuertes):
 def probExtincion (n,num_intentos,pobAct,edadMuertes):
     results = 0
     for i in range (0, num_intentos):
-        pobMuere =ramificacion (n,pobAct,edadMuertes)
+        pobMuere, pob_historica =ramificacion (n,pobAct,edadMuertes)
         if pobMuere:
             results +=1
-        
-    return float (results)/num_intentos 
+    return float (results)/num_intentos , pob_historica
 
+"""Un método auxiliar que determina el número de crías por oso, y varía según el número de osos.
+return:
+    media = 
+    desviacion = 
+param:
+    pobact = 
+"""
 def aproxLamba (pobact):
    media = 2
    desviacion = 0.5
@@ -95,8 +101,6 @@ def aproxLamba (pobact):
        media = 1.6
        desviacion  = 0.6
    return media, desviacion 
-        
-    
             
 """ Un método auxiliar para que el número de crías o de muertes por oso (lam) siempre sea positivo para que corresponda con la realidad.
 return = lista de distribución normal de crías sin números negativos
@@ -169,24 +173,20 @@ def graficas ():
     plt.ylabel('Número de osos')
     plt.show()
     
-    
-    count3, bins3, ignored3 = plt.hist(lam, 100, normed=False)
-    plt.plot(bins3, 1/(7* np.sqrt(3 * np.pi)) *
-    np.exp( - (bins2 - 12)*2 / (2 * 7*2) ),       linewidth=2, color='y')
-    plt.show()
-    
+
     
 
-n = 40
-intentos = 300
+n = 30
+intentos = 200
 poblacionInicial = 11000
 numTemporal = 2000
 pob_muerte,pob_act = variablesAleatorias()
 
 
-print (probExtincion(n,intentos,pob_act,pob_muerte))
+prob, pob_historica = probExtincion(n,intentos,pob_act,pob_muerte)
+print(prob)
 
-
+plt.plot(pob_historica)
 
 
 """Trabajo futuro:
